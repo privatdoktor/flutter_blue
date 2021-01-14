@@ -10,4 +10,13 @@ void main() {
     final bool isAvail = await blue.isAvailable;
     expect(isAvail, true);
   });
+
+  testWidgets('Connect and discover', (WidgetTester tester) async {
+    final FlutterBlue blue = FlutterBlue.instance;
+    blue.scan().listen((scanResult) { 
+      if (scanResult.advertisementData.localName == "VIVA") {
+        print('found');        
+      }
+    });
+  });
 }

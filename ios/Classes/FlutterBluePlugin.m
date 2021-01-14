@@ -140,16 +140,17 @@ typedef NS_ENUM(NSUInteger, LogLevel) {
       result(e);
     }
   } else if([@"discoverServices" isEqualToString:call.method]) {
-    NSString *remoteId = [call arguments];
+      NSString *remoteId = [call arguments];
     @try {
       CBPeripheral *peripheral = [self findPeripheral:remoteId];
       // Clear helper arrays
+
       [_servicesThatNeedDiscovered removeAllObjects];
-      [_characteristicsThatNeedDiscovered removeAllObjects ];
+[_characteristicsThatNeedDiscovered removeAllObjects ];
       [peripheral discoverServices:nil];
-      result(nil);
+result(nil);
     } @catch(FlutterError *e) {
-      result(e);
+result(e);
     }
   } else if([@"services" isEqualToString:call.method]) {
     NSString *remoteId = [call arguments];
@@ -512,8 +513,9 @@ typedef NS_ENUM(NSUInteger, LogLevel) {
     ProtosSetNotificationResponse *response = [[ProtosSetNotificationResponse alloc] init];
     [response setRemoteId:[peripheral.identifier UUIDString]];
     [response setCharacteristic:[self toCharacteristicProto:peripheral characteristic:descriptor.characteristic]];
+      response.characteristic.value = result.value;
     [response setSuccess:true];
-    [_channel invokeMethod:@"SetNotificationResponse" arguments:[self toFlutterData:response]];
+      [_channel invokeMethod:@"SetNotificationResponse" arguments:[self toFlutterData:response]];
   }
 }
 
@@ -706,8 +708,15 @@ typedef NS_ENUM(NSUInteger, LogLevel) {
   [result setRemoteId:[peripheral.identifier UUIDString]];
   [result setCharacteristicUuid:[descriptor.characteristic.UUID fullUUIDString]];
   [result setServiceUuid:[descriptor.characteristic.service.UUID fullUUIDString]];
-  int value = [descriptor.value intValue];
-  [result setValue:[NSData dataWithBytes:&value length:sizeof(value)]];
+    @try {
+        if  ([descriptor.value isKindOfClass:NSNumber.class]) {
+            int value = [descriptor.value intValue];
+            [result setValue:[NSData dataWithBytes:&value length:sizeof(value)]];
+        } else {
+            [result setValue:descriptor.value];
+        }
+    } @catch (NSException *exception) {
+    }
   return result;
 }
 

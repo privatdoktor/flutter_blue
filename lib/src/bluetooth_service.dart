@@ -15,9 +15,11 @@ class BluetoothService {
       : uuid = new Guid(p.uuid),
         deviceId = new DeviceIdentifier(p.remoteId),
         isPrimary = p.isPrimary,
-        characteristics = p.characteristics
-            .map((c) => new BluetoothCharacteristic.fromProto(c))
-            .toList(),
+        characteristics = p.characteristics.map((c) {
+          if (c.serviceUuid == "") 
+            c.serviceUuid = p.uuid;
+          return new BluetoothCharacteristic.fromProto(c);
+        }).toList(),
         includedServices = p.includedServices
             .map((s) => new BluetoothService.fromProto(s))
             .toList();
